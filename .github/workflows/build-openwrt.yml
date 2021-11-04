@@ -11,6 +11,9 @@
 name: Build OpenWrt
 
 on:
+  push:
+    branches:
+    - main
   repository_dispatch:
   workflow_dispatch:
     inputs:
@@ -94,7 +97,7 @@ jobs:
       run: |
         cd openwrt
         make defconfig
-        ./scripts/diffconfig.sh > diff.config
+        ./scripts/diffconfig.sh > /workdir/diff.config
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
@@ -125,8 +128,9 @@ jobs:
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
+        $
         cd openwrt/bin/targets/*/*
-        mv ../../../diff.config .
+        mv /workdir/diff.config .
         tar czvf packages.tgz packages
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
